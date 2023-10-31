@@ -4,14 +4,15 @@ import os
 
 app = Flask(__name__)
 
+filename = "tasks.json"
+
 
 def get_tasks():
-    filename = "tasks.json"
     print(f"Current directory: {os.getcwd()}")
     if not os.path.exists(filename):
         with open(filename, "w") as f:
             json.dump([], f)
-        return []
+        return "No file created, creating a file right now..."
     try:
         with open(filename) as f:
             data = json.load(f)
@@ -38,7 +39,7 @@ def post_task():
         "status": "pending"
     }
     tasks.append(new_task)
-    with open("tasks.json", "w") as f:
+    with open(filename, "w") as f:
         json.dump(tasks, f, indent=2)
     return {"msg": "Task added successfully"}
 
@@ -59,7 +60,7 @@ def delete_task(task_id):
     for task in tasks:
         if task["id"] != int(task_id):
             updated_tasks.append(task)
-    with open("tasks.json", "w") as f:
+    with open(filename, "w") as f:
         json.dump(updated_tasks, f, indent=2)
     return {"msg": "Task deleted successfully!"}
 
@@ -71,10 +72,43 @@ def update_task(task_id):
         if task["id"] == int(task_id):
             task["description"] = request.json.get("description", task.get("description"))
             task["category"] = request.json.get("category", task.get("category"))
-            with open("tasks.json", "w") as f:
+            with open(filename, "w") as f:
                 json.dump(tasks, f, indent=2)
                 return {"message": "Task updated successfully"}
     return {"message": "Task not found"}
+
+
+@app.route("/tasks/<int:task_id>/complete", methods=["PUT"])
+def complete_task(task_id):
+    tasks = get_tasks()
+    for task in tasks:
+        if task["id"] == int(task_id):
+            task["completed"] = True
+    with open(filename, "w") as f:
+        json.dump(tasks, f, indent=2)
+        return {"message": "Task completed"}
+        return {"message": "No task found"}
+
+
+@app.route("/tasks/categories", methods=["GET"])
+def get_all_categories():
+    tasks = get_tasks()
+    categories = []
+    for task in tasks:
+        category = task["category"]
+        if category not in categories:
+            categories.append(category)
+    return {"categories": categories}
+
+
+@app.route("/tasks/categories/<category_name>", methods=["GET"])
+def get_tasks_by_category(category_name):
+    tasks = get_tasks()
+    tasks_in_category = []
+    for task in tasks:
+        if task["category"] == category_name:
+            tasks_in_category.append(task)
+    return {"tasks": tasks_in_category}
 
 
 @app.route("/error-route", methods=["GET"])
