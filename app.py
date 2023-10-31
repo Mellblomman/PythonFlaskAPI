@@ -39,7 +39,7 @@ def post_task():
     }
     tasks.append(new_task)
     with open("tasks.json", "w") as f:
-        json.dump(tasks, f)
+        json.dump(tasks, f, indent=2)
     return {"msg": "Task added successfully"}
 
 
@@ -47,7 +47,7 @@ def post_task():
 def get_task(task_id):
     tasks = get_tasks()
     for task in tasks:
-        if task["id"] == str(task_id):
+        if task["id"] == int(task_id):
             return {"Task": task}
     return {"message": "Task not found"}
 
@@ -57,10 +57,10 @@ def delete_task(task_id):
     tasks = get_tasks()
     updated_tasks = []
     for task in tasks:
-        if task["id"] != str(task_id):
+        if task["id"] != int(task_id):
             updated_tasks.append(task)
     with open("tasks.json", "w") as f:
-        json.dump(updated_tasks, f)
+        json.dump(updated_tasks, f, indent=2)
     return {"msg": "Task deleted successfully!"}
 
 
@@ -68,11 +68,11 @@ def delete_task(task_id):
 def update_task(task_id):
     tasks = get_tasks()
     for task in tasks:
-        if task["id"] == str(task_id):
+        if task["id"] == int(task_id):
             task["description"] = request.json.get("description", task.get("description"))
             task["category"] = request.json.get("category", task.get("category"))
             with open("tasks.json", "w") as f:
-                json.dump(tasks, f)
+                json.dump(tasks, f, indent=2)
                 return {"message": "Task updated successfully"}
     return {"message": "Task not found"}
 
