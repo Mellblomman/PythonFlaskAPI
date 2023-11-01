@@ -11,7 +11,7 @@ def get_tasks():
     print(f"Current directory: {os.getcwd()}")
     if not os.path.exists(filename):
         with open(filename, "w") as f:
-            json.dump([], f)
+            json.dump({"tasks": []}, f, indent=2)
         return "No file created, creating a file right now..."
     try:
         with open(filename) as f:
@@ -26,12 +26,12 @@ def get_tasks():
 @app.route("/tasks", methods=["GET"])
 def get_all_tasks():
     tasks = get_tasks()
-    return {"All tasks": tasks}
+    return tasks
 
 
 @app.route("/tasks", methods=["POST"])
 def post_task():
-    tasks = get_tasks()
+    tasks = get_tasks()["tasks"]
     new_task = {
         "id": len(tasks) + 1,
         "description": request.json.get("description"),
@@ -40,7 +40,7 @@ def post_task():
     }
     tasks.append(new_task)
     with open(filename, "w") as f:
-        json.dump(tasks, f, indent=2)
+        json.dump({"tasks": tasks}, f, indent=2)
     return {"msg": "Task added successfully"}
 
 
