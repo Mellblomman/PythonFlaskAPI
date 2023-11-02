@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, redirect, url_for
 import json
 import os
 
@@ -12,7 +12,7 @@ def get_tasks():
     if not os.path.exists(filename):
         with open(filename, "w") as f:
             json.dump({"tasks": []}, f, indent=2)
-        return "No file created, creating a file right now..."
+        return "No file created, creating a file now"
     try:
         with open(filename) as f:
             data = json.load(f)
@@ -21,6 +21,29 @@ def get_tasks():
         return {"message": "Tasks file not found!"}
     except json.JSONDecodeError:
         return {"error": "Invalid JSON data in tasks file"}
+
+
+@app.route("/")
+def index():
+    task_list = get_tasks()
+    return render_template("index.html", tasks=task_list)
+
+
+@app.route("/submit", methods=["POST"])
+def submit_task_from_html():
+    tasks = get_tasks()["tasks"]
+    new_task = {
+        "id": len(tasks) + 1,
+        "description": request.form.get("description"),
+        "category": request.form.get("category"),
+        "status": "pending"
+    }
+    tasks.append(new_task)
+
+    with open(filename, "w") as f:
+        json.dump({"tasks":tasks}, f, indent=2)
+
+    return redirect(url_for("index"))
 
 
 @app.route("/tasks", methods=["GET"])
@@ -81,13 +104,12 @@ def update_task(task_id):
 @app.route("/tasks/<int:task_id>/complete", methods=["PUT"])
 def complete_task(task_id):
     tasks = get_tasks()
-    for task in tasks:
+    for task in tasks["tasks"]:
         if task["id"] == int(task_id):
             task["completed"] = True
     with open(filename, "w") as f:
         json.dump(tasks, f, indent=2)
-        return {"message": "Task completed"}
-        return {"message": "No task found"}
+    return {"message": "Task completed"}
 
 
 @app.route("/tasks/categories", methods=["GET"])
@@ -109,11 +131,6 @@ def get_tasks_by_category(category_name):
         if task["category"] == category_name:
             tasks_in_category.append(task)
     return {"tasks": tasks_in_category}
-
-
-@app.route("/error-route", methods=["GET"])
-def raise_error():
-    raise (RuntimeError)
 
 
 if __name__ == "__main__":

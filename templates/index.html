@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To Do List</title>
+    <style>
+        body {
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://conscia.com/se/wp-content/uploads/2023/08/devops.png"width="600" height="300">
+    <h1 style="color:white;">To Do List</h1>
+    <h2 style="color:white;">List</h2>
+    <ul style="color:white;">
+        {% for task in tasks['tasks'] %}
+            <li>ID: {{ task['id'] }} Category: {{ task['category'] }} Description: {{ task['description'] }}, Status: {{ task['status'] }}</li>
+        {% endfor %}
+    </ul>
+    <form action="/submit" method="post">
+        <input type="text" name="description" placeholder="Task Description">
+        <input type="text" name="category" placeholder="Category">
+        <input type="submit" value="Add Task">
+    </form>
+    <div>
+        <p><input type="checkbox" id="clean" name="clean"> <label for="clean" style="color: white;">Clean</label></p>
+        <p><input type="checkbox" id="laundry" name="laundry"> <label for="laundry" style="color: white;">Laundry</label></p>
+        <p><input type="checkbox" id="workout" name="workout"> <label for="workout" style="color: white;">Workout</label></p>
+    </div>
+    <input type="text" style="background-color: orange;">
+    <input type="checkbox">
+</body>
+</html>
