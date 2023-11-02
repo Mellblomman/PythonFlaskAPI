@@ -135,5 +135,3 @@ def get_tasks_by_category(category_name):
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-# Why cant we push the app.py testtesttest?
