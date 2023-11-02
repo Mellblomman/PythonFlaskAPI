@@ -31,25 +31,39 @@ def index():
 
 @app.route("/submit", methods=["POST"])
 def submit_task_from_html():
-    tasks = get_tasks()["tasks"]
-    new_task = {
-        "id": len(tasks) + 1,
-        "description": request.form.get("description"),
-        "category": request.form.get("category"),
-        "status": "pending"
-    }
-    tasks.append(new_task)
+    try:
+        tasks = get_tasks()["tasks"]
+        new_task = {
+            "id": len(tasks) + 1,
+            "description": request.form.get("description"),
+            "category": request.form.get("category"),
+            "status": "pending"
+        }
+        tasks.append(new_task)
 
-    with open(filename, "w") as f:
-        json.dump({"tasks": tasks}, f, indent=2)
+        with open(filename, "w") as f:
+            json.dump({"tasks": tasks}, f, indent=2)
 
-    return redirect(url_for("index"))
+        return redirect(url_for("index"))
+    except ValueError:
+        return "Try again!"
 
 
 @app.route("/tasks", methods=["GET"])
-def get_all_tasks():
-    tasks = get_tasks()
-    return tasks
+def get_filtered_tasks():
+    tasks = get_tasks()["tasks"]
+    check_status = request.args.get('status')
+    if check_status and check_status in ['completed', 'pending']:
+        filtered_tasks = []
+        for task in tasks:
+            if task.get("status") == check_status:
+                filtered_tasks.append(task)
+        if filtered_tasks:
+            return {"tasks": filtered_tasks}
+        else:
+            return {"error": f"No {check_status} tasks found."}
+    else:
+        return {"tasks": tasks}
 
 
 @app.route("/tasks", methods=["POST"])
@@ -106,7 +120,7 @@ def complete_task(task_id):
     tasks = get_tasks()
     for task in tasks["tasks"]:
         if task["id"] == int(task_id):
-            task["completed"] = True
+            task["status"] = "completed"
     with open(filename, "w") as f:
         json.dump(tasks, f, indent=2)
     return {"message": "Task completed"}
