@@ -41,7 +41,7 @@ def submit_task_from_html():
     tasks.append(new_task)
 
     with open(filename, "w") as f:
-        json.dump({"tasks":tasks}, f, indent=2)
+        json.dump({"tasks": tasks}, f, indent=2)
 
     return redirect(url_for("index"))
 
@@ -135,3 +135,5 @@ def get_tasks_by_category(category_name):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+# Time for force push!
