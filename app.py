@@ -61,14 +61,14 @@ def post_task():
         tasks.append(new_task)
         with open(filename, "w") as f:
             json.dump({"tasks": tasks}, f, indent=2)
-        return {"msg": "Task added successfully"}
+        return {"message": "Task added successfully"}
     except Exception:
         return handle_errors("Error while adding task", 400)
 
 
 @app.route("/tasks/<int:task_id>", methods=["GET"])
 def get_task(task_id):
-    tasks = get_tasks()
+    tasks = get_tasks()["tasks"]
     for task in tasks:
         if task["id"] == int(task_id):
             return {"Task": task}
@@ -76,8 +76,8 @@ def get_task(task_id):
 
 
 # Define a dictionary of authorized usernames and passwords
-app.config['BASIC_AUTH_USERNAME'] = 'myuser'
-app.config['BASIC_AUTH_PASSWORD'] = 'mypassword'
+app.config["BASIC_AUTH_USERNAME"] = "myuser"
+app.config["BASIC_AUTH_PASSWORD"] = "mypassword"
 
 
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
