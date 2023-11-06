@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 import json
 import os
+from flask_basicauth import BasicAuth
 
 app = Flask(__name__)
+basic_auth = BasicAuth(app)
 
 filename = "tasks.json"
 
@@ -27,26 +29,6 @@ def get_tasks():
 def index():
     task_list = get_tasks()
     return render_template("index.html", tasks=task_list)
-
-
-@app.route("/submit", methods=["POST"])
-def submit_task_from_html():
-    try:
-        tasks = get_tasks()["tasks"]
-        new_task = {
-            "id": len(tasks) + 1,
-            "description": request.form.get("description"),
-            "category": request.form.get("category"),
-            "status": "pending"
-        }
-        tasks.append(new_task)
-
-        with open(filename, "w") as f:
-            json.dump({"tasks": tasks}, f, indent=2)
-
-        return redirect(url_for("index"))
-    except ValueError:
-        return handle_errors("Invalid value", 400)
 
 
 @app.route("/tasks", methods=["GET"])
@@ -93,18 +75,31 @@ def get_task(task_id):
     return handle_errors("Task not found", 404)
 
 
+# Define a dictionary of authorized usernames and passwords
+app.config['BASIC_AUTH_USERNAME'] = 'myuser'
+app.config['BASIC_AUTH_PASSWORD'] = 'mypassword'
+
+
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
+@basic_auth.required
 def delete_task(task_id):
-    tasks = get_tasks()
+    try:
+        task_id = int(task_id)
+    except ValueError:
+        return handle_errors("Invalid task ID", 400)
+    tasks = get_tasks()["tasks"]
     updated_tasks = []
+    found = False
     for task in tasks:
-        if task["id"] != int(task_id):
+        if task["id"] != task_id:
             updated_tasks.append(task)
         else:
-            return handle_errors("Unauthorized access", 401)
+            found = True
+    if not found:
+        return handle_errors("Task not found", 404)
     with open(filename, "w") as f:
-        json.dump(updated_tasks, f, indent=2)
-    return handle_errors("Task deleted successfully!")
+        json.dump({"tasks": updated_tasks}, f, indent=2)
+    return handle_errors("Task deleted successfully!", 200)
 
 
 @app.route("/tasks/<int:task_id>", methods=["PUT"])
