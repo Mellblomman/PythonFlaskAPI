@@ -83,10 +83,6 @@ app.config["BASIC_AUTH_PASSWORD"] = "mypassword"
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
 @basic_auth.required
 def delete_task(task_id):
-    try:
-        task_id = int(task_id)
-    except ValueError:
-        return handle_errors("Invalid task ID", 400)
     tasks = get_tasks()["tasks"]
     updated_tasks = []
     found = False
@@ -104,14 +100,14 @@ def delete_task(task_id):
 
 @app.route("/tasks/<int:task_id>", methods=["PUT"])
 def update_task(task_id):
-    tasks = get_tasks()
+    tasks = get_tasks()["tasks"]
     for task in tasks:
         if task["id"] == int(task_id):
             try:
                 task["description"] = request.json.get("description", task.get("description"))
                 task["category"] = request.json.get("category", task.get("category"))
                 with open(filename, "w") as f:
-                    json.dump(tasks, f, indent=2)
+                    json.dump({"tasks": tasks}, f, indent=2)
                     return {"message": "Task updated successfully"}
             except Exception:
                 return handle_errors("Error while updating task", 400)
@@ -120,18 +116,18 @@ def update_task(task_id):
 
 @app.route("/tasks/<int:task_id>/complete", methods=["PUT"])
 def complete_task(task_id):
-    tasks = get_tasks()
-    for task in tasks["tasks"]:
+    tasks = get_tasks()["tasks"]
+    for task in tasks:
         if task["id"] == int(task_id):
             task["status"] = "completed"
     with open(filename, "w") as f:
-        json.dump(tasks, f, indent=2)
-    return handle_errors("Task completed")
+        json.dump({"tasks": tasks}, f, indent=2)
+    return handle_errors("Task completed", 200)
 
 
 @app.route("/tasks/categories", methods=["GET"])
 def get_all_categories():
-    tasks = get_tasks()
+    tasks = get_tasks()["tasks"]
     categories = []
     for task in tasks:
         category = task["category"]
@@ -142,7 +138,7 @@ def get_all_categories():
 
 @app.route("/tasks/categories/<category_name>", methods=["GET"])
 def get_tasks_by_category(category_name):
-    tasks = get_tasks()
+    tasks = get_tasks()["tasks"]
     tasks_in_category = []
     for task in tasks:
         if task["category"] == category_name:
