@@ -55,7 +55,7 @@ def get_filtered_tasks():
 def post_task():
     try:
         tasks = get_tasks()["tasks"]
-        if request.content_type == 'application/json':
+        if request.content_type == "application/json":
             new_description = request.json.get("description")
             new_category = request.json.get("category")
         else:
@@ -71,7 +71,7 @@ def post_task():
         with open(filename, "w") as f:
             json.dump({"tasks": tasks}, f, indent=2)
 
-        if request.content_type == 'application/json':
+        if request.content_type == "application/json":
             return {"message": "Task added successfully"}
         else:
             return redirect(url_for("index"))
